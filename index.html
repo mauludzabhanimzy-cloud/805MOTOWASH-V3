@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>805 MOTOWASH</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-box">
+      <span class="brand-kicker">DASHBOARD OPERASIONAL</span>
+      <h1>805 MOTOWASH</h1>
+      <p>Transaksi, kendaraan, dan pengeluaran dalam satu tampilan.</p>
+    </div>
+    <div class="header-status"><span class="status-dot"></span> Terhubung ke data</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 1. INPUT DATA -->
+  <section class="section-block">
+    <div class="section-header">
+      <div>
+        <span class="section-number">01</span>
+        <h2>Input Data</h2>
+        <p>Catat kendaraan yang masuk dan pengeluaran operasional.</p>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div class="card form-card">
+        <div class="card-title-row">
+          <div class="icon-box">🚗</div>
+          <div><h3>Transaksi Kendaraan</h3><p>Input satu kendaraan setiap transaksi.</p></div>
+        </div>
+
+        <label for="tanggalTransaksi">Tanggal</label>
+        <input type="date" id="tanggalTransaksi">
+
+        <label for="layanan">Jenis Kendaraan</label>
+        <select id="layanan" onchange="updateTarif()">
+          <option value="">Pilih Kendaraan</option>
+          <option value="motor_kecil">Motor Kecil</option>
+          <option value="motor_besar">Motor Besar</option>
+          <option value="mobil">Mobil</option>
+          <option value="motor_sendiri">Motor Sendiri</option>
+          <option value="mobil_sendiri">Mobil Sendiri</option>
+        </select>
+
+        <div class="detail-box">
+          <div>Tarif <span id="tarif">Rp 0</span></div>
+          <div>Upah Pegawai <span id="upah">Rp 0</span></div>
+          <div>Bagian Pemilik <span id="pemilik">Rp 0</span></div>
+        </div>
+
+        <button id="btnTransaksi">Simpan Transaksi</button>
+      </div>
+
+      <div class="card form-card">
+        <div class="card-title-row">
+          <div class="icon-box">💸</div>
+          <div><h3>Pengeluaran</h3><p>Catat biaya operasional usaha.</p></div>
+        </div>
+
+        <label for="tanggalPengeluaran">Tanggal</label>
+        <input type="date" id="tanggalPengeluaran">
+
+        <label for="keterangan">Keterangan</label>
+        <input type="text" id="keterangan" placeholder="Contoh: Sabun, listrik, makan pegawai">
+
+        <label for="nominal">Nominal</label>
+        <input type="number" id="nominal" min="0" step="1000" placeholder="Nominal">
+
+        <button id="btnPengeluaran">Simpan Pengeluaran</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. FILTER -->
+  <section class="section-block">
+    <div class="section-header compact-header">
+      <div>
+        <span class="section-number">02</span>
+        <h2>Periode Rekap</h2>
+        <p>Pilih tanggal untuk melihat kondisi usaha pada periode tertentu.</p>
+      </div>
+      <button type="button" class="btn-secondary" id="btnRefresh">↻ Muat Ulang</button>
+    </div>
+
+    <div class="card filter-card">
+      <div class="filter-grid">
+        <div>
+          <label for="filterTanggal">Tanggal Harian</label>
+          <input type="date" id="filterTanggal">
+        </div>
+        <div>
+          <label for="filterBulan">Bulan</label>
+          <select id="filterBulan">
+            <option value="0">Januari</option><option value="1">Februari</option>
+            <option value="2">Maret</option><option value="3">April</option>
+            <option value="4">Mei</option><option value="5">Juni</option>
+            <option value="6">Juli</option><option value="7">Agustus</option>
+            <option value="8">September</option><option value="9">Oktober</option>
+            <option value="10">November</option><option value="11">Desember</option>
+          </select>
+        </div>
+        <div>
+          <label for="filterMinggu">Minggu</label>
+          <select id="filterMinggu">
+            <option value="1">Minggu 1 (1 - 7)</option>
+            <option value="2">Minggu 2 (8 - 14)</option>
+            <option value="3">Minggu 3 (15 - 21)</option>
+            <option value="4">Minggu 4 (22 - Akhir Bulan)</option>
+          </select>
+        </div>
+      </div>
+      <div id="statusData" class="data-status">Memuat data...</div>
+    </div>
+  </section>
+
+  <!-- 3. RINGKASAN -->
+  <section class="section-block">
+    <div class="section-header">
+      <div>
+        <span class="section-number">03</span>
+        <h2>Ringkasan Usaha</h2>
+        <p>Jumlah kendaraan dan kondisi keuangan berdasarkan periode yang dipilih.</p>
+      </div>
+    </div>
+
+    <div class="summary-layout">
+      <div class="summary-column">
+        <div class="subsection-title"><h3>🚘 Kendaraan Masuk</h3><span>Volume layanan</span></div>
+        <div class="metric-grid three">
+          <div class="card metric-card">
+            <span class="metric-label">Hari Ini / Dipilih</span>
+            <strong id="kendaraanHari">0</strong>
+            <small id="labelHari">-</small>
+          </div>
+          <div class="card metric-card">
+            <span class="metric-label">Minggu Dipilih</span>
+            <strong id="kendaraanMinggu">0</strong>
+            <small id="labelMinggu">-</small>
+          </div>
+          <div class="card metric-card">
+            <span class="metric-label">Bulan Dipilih</span>
+            <strong id="kendaraanBulan">0</strong>
+            <small id="labelBulan">-</small>
+          </div>
+        </div>
+
+        <div class="card mini-table-card">
+          <div class="mini-card-heading"><h4>Rincian Kendaraan</h4><span>Per jenis kendaraan</span></div>
+          <div class="table-wrapper compact-table-wrapper">
+            <table class="compact-table">
+              <thead><tr><th>Jenis</th><th>Hari</th><th>Minggu</th><th>Bulan</th></tr></thead>
+              <tbody id="tabelRekapKendaraan"><tr><td colspan="4" class="empty-cell">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-column">
+        <div class="subsection-title"><h3>💰 Keuangan</h3><span>Mingguan & bulanan</span></div>
+
+        <div class="finance-panel card">
+          <div class="finance-panel-title"><h4>Mingguan</h4><span id="financeWeekLabel">Periode terpilih</span></div>
+          <div class="finance-grid">
+            <div><span>Omzet</span><strong id="omzetMinggu">Rp 0</strong></div>
+            <div><span>Pengeluaran</span><strong id="pengeluaranMinggu">Rp 0</strong></div>
+            <div><span>Upah Pegawai</span><strong id="pegawaiMinggu">Rp 0</strong></div>
+            <div><span>Bagian Pemilik</span><strong id="pemilikMinggu">Rp 0</strong></div>
+            <div class="finance-highlight"><span>Laba Bersih</span><strong id="labaMinggu">Rp 0</strong></div>
+          </div>
+        </div>
+
+        <div class="finance-panel card">
+          <div class="finance-panel-title"><h4>Bulanan</h4><span id="financeMonthLabel">Periode terpilih</span></div>
+          <div class="finance-grid">
+            <div><span>Omzet</span><strong id="omzetBulan">Rp 0</strong></div>
+            <div><span>Pengeluaran</span><strong id="pengeluaranBulan">Rp 0</strong></div>
+            <div><span>Upah Pegawai</span><strong id="pegawaiBulan">Rp 0</strong></div>
+            <div><span>Bagian Pemilik</span><strong id="pemilikBulan">Rp 0</strong></div>
+            <div class="finance-highlight"><span>Laba Bersih</span><strong id="labaBulan">Rp 0</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PENGELUARAN -->
+  <section class="section-block">
+    <div class="section-header">
+      <div>
+        <span class="section-number">04</span>
+        <h2>Pengeluaran</h2>
+        <p>Ringkasan biaya dan daftar pengeluaran pada bulan yang dipilih.</p>
+      </div>
+    </div>
+
+    <div class="metric-grid three expense-metrics">
+      <div class="card metric-card"><span class="metric-label">Harian</span><strong id="pengeluaranHariRekap">Rp 0</strong></div>
+      <div class="card metric-card"><span class="metric-label">Mingguan</span><strong id="pengeluaranMingguRekap">Rp 0</strong></div>
+      <div class="card metric-card"><span class="metric-label">Bulanan</span><strong id="pengeluaranBulanRekap">Rp 0</strong></div>
+    </div>
+
+    <div class="card list-card compact-list-card">
+      <div class="list-card-heading">
+        <div><h3>Daftar Pengeluaran</h3><p id="labelPengeluaranBulan">-</p></div>
+      </div>
+      <div class="table-wrapper list-scroll small-list-scroll">
+        <table class="list-table">
+          <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th></tr></thead>
+          <tbody id="tabelPengeluaran"><tr><td colspan="3" class="empty-cell">Belum ada data.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. RIWAYAT -->
+  <section class="section-block last-section">
+    <div class="section-header">
+      <div>
+        <span class="section-number">05</span>
+        <h2>Riwayat Input</h2>
+        <p>Cek kembali data yang sudah tersimpan tanpa memenuhi seluruh halaman.</p>
+      </div>
+    </div>
+
+    <div class="card list-card compact-list-card history-card">
+      <div class="history-toolbar">
+        <div>
+          <label for="filterJenisData">Jenis Data</label>
+          <select id="filterJenisData">
+            <option value="SEMUA">Semua Data</option>
+            <option value="TRANSAKSI">Transaksi Kendaraan</option>
+            <option value="PENGELUARAN">Pengeluaran</option>
+          </select>
+        </div>
+        <div>
+          <label for="cariData">Cari</label>
+          <input type="search" id="cariData" placeholder="Cari kendaraan / keterangan...">
+        </div>
+      </div>
+
+      <div class="table-wrapper list-scroll history-scroll">
+        <table class="list-table history-table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Jenis</th>
+              <th>Keterangan</th>
+          
+            </tr>
+          </thead>
+          <tbody id="tabelSemuaData"><tr><td colspan="6" class="empty-cell">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <div class="table-footer" id="jumlahBarisData">0 data</div>
+        <div class="pagination-controls">
+          <button type="button" class="page-btn" id="btnPrevPage">← Sebelumnya</button>
+          <span id="infoHalaman">Halaman 1 / 1</span>
+          <button type="button" class="page-btn" id="btnNextPage">Berikutnya →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>© 2026 805 MOTOWASH</p>
+  <p>Dashboard Keuangan Terintegrasi</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
